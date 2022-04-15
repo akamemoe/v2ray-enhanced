@@ -100,7 +100,7 @@ func (h *HeaderReader) Read(reader io.Reader) (*buf.Buffer, error) {
 			buffer.Clear()
 			copy(buffer.Extend(lenEnding), leftover)
 
-			if _, err := readRequest(bufio.NewReader(bytes.NewReader(headerBuf.Bytes()))); err != io.ErrUnexpectedEOF {
+			if _, err := readRequest(bufio.NewReader(bytes.NewReader(headerBuf.Bytes())), false); err != io.ErrUnexpectedEOF {
 				return nil, err
 			}
 		}
@@ -120,7 +120,7 @@ func (h *HeaderReader) Read(reader io.Reader) (*buf.Buffer, error) {
 	}
 
 	// Parse the request
-	if req, err := readRequest(bufio.NewReader(bytes.NewReader(headerBuf.Bytes()))); err != nil {
+	if req, err := readRequest(bufio.NewReader(bytes.NewReader(headerBuf.Bytes())), false); err != nil {
 		return nil, err
 	} else { // nolint: revive
 		h.req = req
