@@ -58,7 +58,11 @@ func (h *requestHandler) ServeHTTP(writer http.ResponseWriter, request *http.Req
 		}
 	} else if h.earlyDataHeaderName != "" {
 		if request.URL.Path != h.path {
-			writer.WriteHeader(http.StatusNotFound)
+			writer.WriteHeader(http.StatusOK)
+			writer.Header().Set("Server", "nginx")
+			writer.Header().Set("Content-Type", "text/html")
+			writer.Header().Set("Author", "qinlan")
+			writer.Write([]byte(FakeNormalResponseHtml))
 			return
 		}
 		earlyDataStr := request.Header.Get(h.earlyDataHeaderName)
