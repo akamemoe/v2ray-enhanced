@@ -50,10 +50,10 @@ const 	FakeNormalResponseHtml = `
 </html>`
 
 func writeFakeResponseHtml(writer http.ResponseWriter){
-	writer.WriteHeader(http.StatusOK)
 	writer.Header().Set("Server", "nginx")
-	writer.Header().Set("Content-Type", "text/html")
-	writer.Header().Set("Author", "qinlan")
+	writer.Header().Set("Author", "QinLan")
+	writer.Header().Set("X-Served-By", "cache-ewr18123-tencent-cloud")
+	writer.WriteHeader(http.StatusOK)
 	writer.Write([]byte(FakeNormalResponseHtml))
 }
 
