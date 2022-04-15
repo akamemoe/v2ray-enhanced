@@ -40,6 +40,15 @@ var upgrader = &websocket.Upgrader{
 	},
 }
 
+const 	FakeNormalResponseHtml = `
+<html>
+<head><title>馒小蛮古风唱见直播间</title></head>
+<style>*{margin:0;padding:0}</style>
+<body>
+<iframe src="https://www.yy.com/10299121" style="border:0px #ffffff none;" name="myiFrame" scrolling="no" frameborder="1" marginheight="0px" marginwidth="0px" height="100%" width="100%"  allowfullscreen></iframe>
+</body>
+</html>`
+
 func (h *requestHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	var earlyData io.Reader
 	if !h.earlyDataEnabled { // nolint: gocritic
@@ -59,7 +68,11 @@ func (h *requestHandler) ServeHTTP(writer http.ResponseWriter, request *http.Req
 			earlyDataStr := request.URL.RequestURI()[len(h.path):]
 			earlyData = base64.NewDecoder(base64.RawURLEncoding, bytes.NewReader([]byte(earlyDataStr)))
 		} else {
-			writer.WriteHeader(http.StatusNotFound)
+			writer.WriteHeader(http.StatusOK)
+			writer.Header().Set("Server", "nginx")
+			writer.Header().Set("Content-Type", "text/html")
+			writer.Header().Set("Author", "qinlan")
+			writer.Write([]byte(FakeNormalResponseHtml))
 			return
 		}
 	}
