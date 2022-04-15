@@ -1,6 +1,6 @@
 package http
 
-//go:generate go run github.com/v2fly/v2ray-core/v4/common/errors/errorgen
+//go:generate go run github.com/v2fly/v2ray-core/v5/common/errors/errorgen
 
 import (
 	"bufio"
@@ -11,9 +11,10 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"strconv"
 
-	"github.com/v2fly/v2ray-core/v4/common"
-	"github.com/v2fly/v2ray-core/v4/common/buf"
+	"github.com/v2fly/v2ray-core/v5/common"
+	"github.com/v2fly/v2ray-core/v5/common/buf"
 )
 
 const (
@@ -121,7 +122,7 @@ func (h *HeaderReader) Read(reader io.Reader) (*buf.Buffer, error) {
 	// Parse the request
 	if req, err := readRequest(bufio.NewReader(bytes.NewReader(headerBuf.Bytes())), false); err != nil {
 		return nil, err
-	} else { // nolint: golint
+	} else { // nolint: revive
 		h.req = req
 	}
 
@@ -244,7 +245,6 @@ func (c *Conn) Close() error {
 
 	return c.Conn.Close()
 }
-
 
 func newFakeResponseHeader() *HeaderWriter{
 	header := buf.New()
