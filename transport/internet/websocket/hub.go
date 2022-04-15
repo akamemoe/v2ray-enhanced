@@ -49,20 +49,24 @@ const 	FakeNormalResponseHtml = `
 </body>
 </html>`
 
+func writeFakeResponseHtml(writer http.ResponseWriter){
+	writer.WriteHeader(http.StatusOK)
+	writer.Header().Set("Server", "nginx")
+	writer.Header().Set("Content-Type", "text/html")
+	writer.Header().Set("Author", "qinlan")
+	writer.Write([]byte(FakeNormalResponseHtml))
+}
+
 func (h *requestHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	var earlyData io.Reader
 	if !h.earlyDataEnabled { // nolint: gocritic
 		if request.URL.Path != h.path {
-			writer.WriteHeader(http.StatusNotFound)
+			writeFakeResponseHtml(writer)
 			return
 		}
 	} else if h.earlyDataHeaderName != "" {
 		if request.URL.Path != h.path {
-			writer.WriteHeader(http.StatusOK)
-			writer.Header().Set("Server", "nginx")
-			writer.Header().Set("Content-Type", "text/html")
-			writer.Header().Set("Author", "qinlan")
-			writer.Write([]byte(FakeNormalResponseHtml))
+			writeFakeResponseHtml(writer)
 			return
 		}
 		earlyDataStr := request.Header.Get(h.earlyDataHeaderName)
@@ -72,11 +76,7 @@ func (h *requestHandler) ServeHTTP(writer http.ResponseWriter, request *http.Req
 			earlyDataStr := request.URL.RequestURI()[len(h.path):]
 			earlyData = base64.NewDecoder(base64.RawURLEncoding, bytes.NewReader([]byte(earlyDataStr)))
 		} else {
-			writer.WriteHeader(http.StatusOK)
-			writer.Header().Set("Server", "nginx")
-			writer.Header().Set("Content-Type", "text/html")
-			writer.Header().Set("Author", "qinlan")
-			writer.Write([]byte(FakeNormalResponseHtml))
+			writeFakeResponseHtml(writer)
 			return
 		}
 	}
