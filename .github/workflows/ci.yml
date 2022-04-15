@@ -1,0 +1,48 @@
+name: build and release
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/*.yml"
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ^1.17
+      
+      - name: downlaod dependencies
+        run: |
+          go mod download
+          go mod tidy
+        
+      - name: build binary and package
+        run: |
+          go build -v -o v2ray -trimpath -ldflags "-s -w -buildid=" ./main
+          curl -L -o geoip.dat "https://raw.githubusercontent.com/v2fly/geoip/release/geoip.dat"
+          curl -L -o geoip-only-cn-private.dat "https://raw.githubusercontent.com/v2fly/geoip/release/geoip-only-cn-private.dat"
+          curl -L -o geosite.dat "https://raw.githubusercontent.com/v2fly/domain-list-community/release/dlc.dat"
+          chmod a+x v2ray
+          TIPS=$(./v2ray --version | grep -i censorship)
+          test -n "$TIPS" || (echo "bad binary. processing abort." && exit 42)
+          zip -9vr v2ray-linux-64.zip v2ray *.dat
+          
+      - name: release binary
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURRENT_TAG: v1.0.0
+        run: |
+          gh release delete ${CURRENT_TAG} -y || true
+          gh release create ${CURRENT_TAG} -t ${CURRENT_TAG} -n "use at your own risk." *.zip
