@@ -48,5 +48,5 @@ jobs:
           else
             LATEST_TAG=$(git describe --tags --abbrev=0)
             test -n "$LATEST_TAG" || (echo "latest tag not found, exit." && exit 0)
-            gh release upload --clobber ${LATEST_TAG} -t ${LATEST_TAG} *.zip
+            gh release upload --clobber ${LATEST_TAG} *.zip
           fi
