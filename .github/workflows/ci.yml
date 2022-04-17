@@ -34,15 +34,19 @@ jobs:
           curl -L -o geoip.dat "https://raw.githubusercontent.com/v2fly/geoip/release/geoip.dat"
           curl -L -o geoip-only-cn-private.dat "https://raw.githubusercontent.com/v2fly/geoip/release/geoip-only-cn-private.dat"
           curl -L -o geosite.dat "https://raw.githubusercontent.com/v2fly/domain-list-community/release/dlc.dat"
-          chmod a+x v2ray
-          TIPS=$(./v2ray --version | grep -i censorship)
-          test -n "$TIPS" || (echo "bad binary. processing abort." && exit 42)
           zip -9vr v2ray-linux-64.zip v2ray *.dat
           
       - name: release binary
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CURRENT_TAG: v1.0.0
         run: |
-          gh release delete ${CURRENT_TAG} -y || true
-          gh release create ${CURRENT_TAG} -t ${CURRENT_TAG} -n "use at your own risk." *.zip
+          COMMIT_MESSAGE=$(git log -1 --pretty="format:%s" | grep -Ei '^bump version v[0-9]+\.[0-9]+\.[0-9]+$')
+          if [ -n "$COMMIT_MESSAGE" ]; then
+            BUMP_VERSION=$(git log -1 --pretty="format:%s" | grep -Eio 'v[0-9]+\.[0-9]+\.[0-9]+')
+            echo "bump version to $BUMP_VERSION"
+            gh release create ${BUMP_VERSION} -t ${BUMP_VERSION} -n "### New Version Was Released  \nuse at your own risk." *.zip
+          else
+            LATEST_TAG=$(git describe --tags --abbrev=0)
+            test -n "$LATEST_TAG" || (echo "latest tag not found, exit." && exit 0)
+            gh release upload --clobber ${LATEST_TAG} -t ${LATEST_TAG} *.zip
+          fi
