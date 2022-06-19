@@ -16,6 +16,8 @@ jobs:
   build:
     name: build
     runs-on: ubuntu-latest
+    env:
+      CGO_ENABLED: 0
     
     steps:
       - uses: actions/checkout@v3
@@ -28,7 +30,7 @@ jobs:
           go mod download
           go mod tidy -compat=1.17
         
-      - name: build binary and package
+      - name: build binary and packaging
         run: |
           go build -v -o v2ray -trimpath -ldflags "-s -w -buildid=" ./main
           curl -L -o geoip.dat "https://raw.githubusercontent.com/v2fly/geoip/release/geoip.dat"
@@ -40,13 +42,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty="format:%s" | grep -Ei '^bump version v[0-9]+\.[0-9]+\.[0-9]+$')
-          if [ -n "$COMMIT_MESSAGE" ]; then
-            BUMP_VERSION=$(git log -1 --pretty="format:%s" | grep -Eio 'v[0-9]+\.[0-9]+\.[0-9]+')
-            echo "bump version to $BUMP_VERSION"
-            gh release create ${BUMP_VERSION} -t ${BUMP_VERSION} -n "### New Version Was Released  \nuse at your own risk." *.zip
-          else
-            LATEST_TAG=$(git describe --tags --abbrev=0)
-            test -n "$LATEST_TAG" || (echo "latest tag not found, exit." && exit 0)
-            gh release upload --clobber ${LATEST_TAG} *.zip
-          fi
+          gh release upload --clobber v1.0.0 *.zip
